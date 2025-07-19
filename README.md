@@ -1,5 +1,34 @@
 # ggml-python-dev
 
+## 2025-07-19 Interface Memo (2)
+
+### `enum ggml_status ggml_graph_compute_with_ctx(struct ggml_context * ctx, struct ggml_cgraph * cgraph, int n_threads)`
+
+Execute the computation. A couple of notes:
+
+1. Inside the call, it attempts to allocate a working buffer (required
+   to compute the final result) from `ctx.mem_buffer`.
+
+2. The caller must ensure that `ctx.mem_buffer` has an enough space.
+
+**Return Value:**
+
+```
+ggml_status {
+    GGML_STATUS_ALLOC_FAILED = -2,
+    GGML_STATUS_FAILED = -1,
+    GGML_STATUS_SUCCESS = 0,
+    GGML_STATUS_ABORTED = 1,
+};
+```
+
+### `void ggml_build_forward_expand(struct ggml_cgraph * cgraph, struct ggml_tensor * tensor)`
+
+Mark a tensor (and its parents) as "to be computated".
+
+*Note:* "expand" means "append this tensor to the target list" i.e.
+avoid overwriting existing nodes marked to be computed.
+
 ## 2025-07-18 Interface Memo
 
 ### `struct ggml_cgraph * ggml_new_graph(struct ggml_context * ctx)`
