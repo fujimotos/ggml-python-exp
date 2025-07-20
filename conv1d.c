@@ -16,21 +16,12 @@ int main(int argc, char **argv)
 
     /*
      * This applies an 1D convolution over an input tensor
-     * {1, 2, 3, 4, 5} using a kernel tensor {10, 20, 10}.
+     * {1, 2, 3, 4, 5} using a kernel tensor {3, 4, 5}.
      */
-    struct ggml_tensor *tA = ggml_new_tensor_3d(ctx, GGML_TYPE_F32, 5, 1, 1);
-    float *dA = (float *) tA->data;
-    dA[0] = 1.0;
-    dA[1] = 2.0;
-    dA[2] = 3.0;
-    dA[3] = 4.0;
-    dA[4] = 5.0;
+    struct ggml_tensor *tA = ggml_arange(ctx, 1, 6, 1);
 
-    struct ggml_tensor *tK = ggml_new_tensor_3d(ctx, GGML_TYPE_F16, 3, 1, 1);
-    ggml_fp16_t *dK = (ggml_fp16_t *) tK->data;
-    dK[0] = ggml_fp32_to_fp16(10.0);
-    dK[1] = ggml_fp32_to_fp16(20.0);
-    dK[2] = ggml_fp32_to_fp16(10.0);
+    struct ggml_tensor *tK_f32 = ggml_arange(ctx, 3, 6, 1);
+    struct ggml_tensor *tK = ggml_cast(ctx, tK_f32, GGML_TYPE_F16);
 
     struct ggml_tensor *tR = ggml_conv_1d(ctx, tK, tA, 1, 1, 1);
     ggml_build_forward_expand(gf, tR);
@@ -38,7 +29,7 @@ int main(int argc, char **argv)
     ggml_graph_compute_with_ctx(ctx, gf, 1);
 
     /*
-     * The result must be {40, 80, 120, 160, 140}.
+     * The result must be {14, 26, 38, 50, 32}.
      */
     printf("[");
     for (int i = 0; i < ggml_nelements(tR); i++) {
