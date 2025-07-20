@@ -3154,6 +3154,10 @@ enum ggml_status ggml_graph_compute_with_ctx(struct ggml_context * ctx, struct g
 
     cplan.work_data = (uint8_t *)ggml_new_buffer(ctx, cplan.work_size);
 
+    if (cplan.work_data == NULL) {
+        return GGML_STATUS_ALLOC_FAILED;
+    }
+
     return ggml_graph_compute(cgraph, &cplan);
 }
 
