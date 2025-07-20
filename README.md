@@ -1,5 +1,35 @@
 # ggml-python-dev
 
+## 2025-07-20 Backend Interface
+
+Major Components:
+
+- **Registry** (`ggml_backend_reg_t`)
+
+  - Manage a list of GPUs available.
+  - An empty skelton on CPU-based backends.
+
+- **Device** (`ggml_backend_dev_t`)
+
+  - Represent a single GPU.
+  - Define how to allocate memory, supported operations and etc.
+
+List of available ggml backends (as of Jun 2025):
+
+| Name       | Platform  | Description |
+| ---------- | --------- | ----------- |
+| ggml-cpu`  | CPU       | Always Available |
+| ggml-blas  | CPU       | OpenBLAS, BLIS, MKL (Intel) and NVPL (Nvidia Grace) |
+| ggml-cann  | NPU       | For Huawei's NPU chips |
+| ggml-cuda  | GPU       | For Nvidia GPUs |
+| ggml-hip   | GPU       | For AMD and Nvidia GPUs |
+| ggml-metal | GPU       | For Apple Metal Accelerator |
+| ggml-musa  | GPU       | For Moore Threads's GPU chips |
+| ggml-opencl| VARIOUS   | A standard interface from Khronos Group |
+| ggml-vulkan| GPU       | A standard interface from Khronos Group |
+| ggml-sycl  | CPU/GPU   | A higher wrapper from Khronos Group |
+| ggml-rpc   | N/A       | Serve ggml over TCP |
+
 ## 2025-07-19 Interface Memo (2)
 
 ### `enum ggml_status ggml_graph_compute_with_ctx(struct ggml_context * ctx, struct ggml_cgraph * cgraph, int n_threads)`
