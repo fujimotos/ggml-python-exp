@@ -14,6 +14,19 @@ Major Components:
   - Represent a single GPU.
   - Define how to allocate memory, supported operations and etc.
 
+- **Buffer Type** (`ggml_backend_buffer_type_t`)
+
+  - Allocate and manage working memory.
+  - Manage a number of **Buffers** (see below)
+
+- **Buffer** (`ggml_backend_buffer_t`)
+
+  - Represent a single continuous chunk of memory.
+
+- **Tensor Allocator** (`struct ggml_tallocr`)
+
+  - Manage the unused space of a buffer.
+
 List of available ggml backends (as of Jun 2025):
 
 | Name       | Platform  | Description |
