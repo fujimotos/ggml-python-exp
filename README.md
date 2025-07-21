@@ -1,5 +1,50 @@
 # ggml-python-dev
 
+## 2025-07-21 Backend Interface (Graph Processing)
+
+The main entry point is `ggml_backend_graph_compute()`. What this function
+does is to kick an executor asynchronously and wait for them:
+
+```c
+enum ggml_status ggml_backend_graph_compute(ggml_backend_t backend, struct ggml_cgraph * cgraph) {
+    enum ggml_status err = ggml_backend_graph_compute_async(backend, cgraph);
+    ggml_backend_synchronize(backend);
+    return err;
+}
+```
+
+**struct ggml_cplan**
+
+* This is actually CPU only.
+* It's not exactly an "execution plan", but essentially an manager that
+  holds references to threads and working memory.
+
+```c
+struct ggml_cplan {
+    size_t    work_size; // size of work buffer, calculated by `ggml_graph_plan()`
+    uint8_t * work_data; // work buffer, to be allocated by caller before calling to `ggml_graph_compute()`
+
+    int n_threads;
+    struct ggml_threadpool * threadpool;
+
+    // abort ggml_graph_compute when true
+    ggml_abort_callback abort_callback;
+    void *              abort_callback_data;
+};
+```
+
+**How does ggml process a tensor using multiple threads?**
+
+* What's surprising to me was that ggml does NOT distribute tasks to workers.
+  In other words, the computation model is not task pararellism.
+
+* Instead, each task is horizontally spread across threads. Each thread takes
+  a bit of the task and process them. (For example: When adding up two tensors,
+  ith-thread will compute every ith element).
+
+* This makes lots sense, because most Tensor (or Matrix) operations can be
+  decomposed into smaller units very naturally.
+
 ## 2025-07-20 Backend Interface
 
 Major Components:
