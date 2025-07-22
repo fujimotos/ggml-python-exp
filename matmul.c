@@ -2,6 +2,28 @@
 #include "ggml-cpu.h"
 #include <string.h>
 
+/*
+ * This function computes the exact amount needed for A * B^T
+ * where A and B are both 2 x 2 tensors.
+ */
+size_t get_required_memory(void)
+{
+    size_t ret;
+    ret += 2 * 2 * ggml_type_size(GGML_TYPE_F32) + ggml_tensor_overhead(); // A
+    ret += 2 * 2 * ggml_type_size(GGML_TYPE_F32) + ggml_tensor_overhead(); // B
+    ret += 2 * 2 * ggml_type_size(GGML_TYPE_F32) + ggml_tensor_overhead(); // A * B^T
+    ret += ggml_graph_overhead();  // gf (computation graph)
+
+    /* This is for a work memory buffer object. While matmul does not
+     * require a work buffer, an empty buffer is allocated anyway.
+     *
+     * Note: `sizeof(struct ggml_object) == 32`
+     */
+    ret += 32;
+
+    return ret;  // 83792 bytes
+}
+
 int main(int argc, char **argv)
 {
     float A[4] = {1, 2, 3, 4};
@@ -11,7 +33,7 @@ int main(int argc, char **argv)
      * Build Computation Graph
      */
     struct ggml_init_params params = {
-        1024 * 1024 * 256,
+        get_required_memory(),
         NULL,
         false,
     };
