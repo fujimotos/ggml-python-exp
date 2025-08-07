@@ -23,9 +23,8 @@ int main(int argc, char **argv)
      * {1, 2, 3, 4, 5} using a kernel tensor {3, 4, 5}.
      */
     struct ggml_tensor *tA = ggml_arange(ctx, 1, 6, 1);
-
-    struct ggml_tensor *tK_f32 = ggml_arange(ctx, 3, 6, 1);
-    struct ggml_tensor *tK = ggml_cast(ctx, tK_f32, GGML_TYPE_F16);
+    struct ggml_tensor *tK = ggml_arange(ctx, 3, 6, 1);
+    tK = ggml_cast(ctx, tK, GGML_TYPE_F16);
 
     struct ggml_tensor *tR = ggml_conv_1d(ctx, tK, tA, 1, 1, 1);
     ggml_build_forward_expand(gf, tR);
