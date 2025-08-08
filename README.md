@@ -1,5 +1,9 @@
 # ggml-python-dev
 
+## 2025-08-08 Silero VAD
+
+![](silero-vad/silero-vad.png)
+
 ## 2025-07-21 Backend Interface (Graph Processing)
 
 The main entry point is `ggml_backend_graph_compute()`. What this function
