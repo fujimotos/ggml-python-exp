@@ -2,7 +2,7 @@
 
 ## 2025-08-08 Silero VAD
 
-![](silero-vad/silero-vad.png)
+![](silero-vad/blueprint.png)
 
 ## 2025-07-21 Backend Interface (Graph Processing)
 
