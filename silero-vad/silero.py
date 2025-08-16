@@ -9,11 +9,10 @@ class STFT(torch.nn.Module):
         self.cutoff = (n_fft // 2 + 1)
         out_channels = self.cutoff * 2
 
-        self.conv1d = torch.nn.Conv1d(in_channels=1,
-                                      out_channels=out_channels,
-                                      kernel_size=win_length,
-                                      stride=hop_length,
-                                      bias=False)
+        self.conv = torch.nn.Conv1d(1, out_channels,
+                                    kernel_size=win_length,
+                                    stride=hop_length,
+                                    bias=False)
 
         self.padding = torch.nn.ReflectionPad1d(pad_length)
 
@@ -22,7 +21,7 @@ class STFT(torch.nn.Module):
         # the expectation of torch.nn.Conv1d.
         x = torch.unsqueeze(x, 1)
         x = self.padding(x)
-        x = self.conv1d(x)
+        x = self.conv(x)
         return self.magnitude(x)
 
     def magnitude(self, x):
@@ -35,9 +34,9 @@ def test():
 
     stft = STFT()
 
-    tensors = safetensors.torch.load_file('data/silero_vad.safetensors')
-    with torch.no_grad():
-        stft.conv1d.weight.data = tensors['stft.conv1d.weight']
+    stft.load_state_dict(
+        safetensors.torch.load_file('data/silero_vad.safetensors')
+    )
 
     with open('data/jfk.raw', 'rb') as fp:
         audio = np.frombuffer(fp.read(), dtype=np.float32)
