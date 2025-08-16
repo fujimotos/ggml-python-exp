@@ -8,8 +8,10 @@ class STFT(torch.nn.Module):
     def __init__(self, n_fft=256, hop_length=128, win_length=256, pad_length=(0, 64)):
         super().__init__()
 
-        self.cutoff = (n_fft // 2 + 1)
-        out_channels = self.cutoff * 2
+        # Rows up to <offset> represent real value, and
+        # rows after that represent imaginary value.
+        self.offset = (n_fft // 2 + 1)
+        out_channels = self.offset * 2
 
         self.conv = torch.nn.Conv1d(1, out_channels,
                                     kernel_size=win_length,
@@ -27,8 +29,8 @@ class STFT(torch.nn.Module):
         return self.magnitude(x)
 
     def magnitude(self, x):
-        real = x[:, :self.cutoff, :]
-        imag = x[:, self.cutoff:, :]
+        real = x[:, :self.offset, :]
+        imag = x[:, self.offset:, :]
         return torch.sqrt(torch.pow(real, 2) + torch.pow(imag, 2))
 
 class AudioEncoder(torch.nn.Module):
