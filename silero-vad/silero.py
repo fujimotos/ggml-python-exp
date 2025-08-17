@@ -54,16 +54,22 @@ class AudioEncoder(torch.nn.Module):
     def forward(self, x):
         return self.se(x)
 
+class LSTMDecoder(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = torch.nn.LSTM(128, 128, batch_first=True)
+
 class SileroVAD(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.stft = STFT()
         self.encoder = AudioEncoder()
+        self.decoder = LSTMDecoder()
 
     def forward(self, x):
         x = self.stft(x)
         x = self.encoder(x)
-        return x
+        return self.decoder(x)
 
 def test():
     torch.set_printoptions(sci_mode=False)
