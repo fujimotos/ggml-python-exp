@@ -57,7 +57,27 @@ class AudioEncoder(torch.nn.Module):
 class LSTMDecoder(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.lstm = torch.nn.LSTM(128, 128, batch_first=True)
+        self.h = None
+        self.lstm = torch.nn.LSTM(128, 128)
+        self.se = torch.nn.Sequential(
+            collections.OrderedDict(
+                [
+                    ("dropout", torch.nn.Dropout(0.1)),
+                    ("relu",    torch.nn.ReLU()),
+                    ("conv",    torch.nn.Conv1d(128, 1, 1, 1, 0)),
+                    ("sigmoid", torch.nn.Sigmoid()),
+                ]
+            )
+        )
+
+    def forward(self, x):
+        # Reorder Tensor dimension because PyTorch's LSTM expects
+        # [seq, batch, features]
+        x = x.permute(2,0,1)
+        x, self.h = self.lstm(x, self.h)
+        x = x.permute(1,2,0)
+        return self.se(x)
+
 
 class SileroVAD(torch.nn.Module):
     def __init__(self):
@@ -79,6 +99,7 @@ def test():
     model.load_state_dict(
         safetensors.torch.load_file('data/silero_vad.safetensors')
     )
+    model.eval()
 
     with open('data/jfk.raw', 'rb') as fp:
         audio = np.frombuffer(fp.read(), dtype=np.float32)
@@ -90,6 +111,9 @@ def test():
     with torch.no_grad():
         x = model.stft(x)
         x = model.encoder(x)
+        x = model.decoder(x)
+
+        print(f"prob={x.item():.4f}")
 
 if __name__ == '__main__':
     test()
