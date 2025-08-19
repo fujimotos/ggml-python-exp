@@ -5,8 +5,13 @@ import torch
 import safetensors.torch
 
 class STFT(torch.nn.Module):
-    def __init__(self, n_fft=256, hop_length=128, win_length=256, pad_length=(0, 64)):
+    def __init__(self):
         super().__init__()
+
+        n_fft = 256
+        hop_length = 128
+        win_length = 256
+        pad_length = (0, 64)
 
         # Rows up to <offset> represent real value, and
         # rows after that represent imaginary value.
@@ -78,7 +83,6 @@ class LSTMDecoder(torch.nn.Module):
         x = x.permute(1,2,0)
         return self.se(x)
 
-
 class SileroVAD(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -109,11 +113,10 @@ def test():
     x = torch.unsqueeze(x, 0)
 
     with torch.no_grad():
-        x = model.stft(x)
-        x = model.encoder(x)
-        x = model.decoder(x)
+        x = model(x)
 
-        print(f"prob={x.item():.4f}")
+    for prob in x:
+        print(f"P = {prob.item():.4f}")
 
 if __name__ == '__main__':
     test()
