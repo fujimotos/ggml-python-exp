@@ -62,7 +62,6 @@ class AudioEncoder(torch.nn.Module):
 class LSTMDecoder(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.h = None
         self.lstm = torch.nn.LSTM(128, 128)
         self.se = torch.nn.Sequential(
             collections.OrderedDict(
@@ -75,13 +74,13 @@ class LSTMDecoder(torch.nn.Module):
             )
         )
 
-    def forward(self, x):
+    def forward(self, x, h):
         # Reorder Tensor dimension because PyTorch's LSTM expects
         # [seq, batch, features]
         x = x.permute(2,0,1)
-        x, self.h = self.lstm(x, self.h)
+        x, h = self.lstm(x, h)
         x = x.permute(1,2,0)
-        return self.se(x)
+        return self.se(x), h
 
 class SileroVAD(torch.nn.Module):
     def __init__(self):
@@ -90,14 +89,54 @@ class SileroVAD(torch.nn.Module):
         self.encoder = AudioEncoder()
         self.decoder = LSTMDecoder()
 
-    def forward(self, x):
+    def forward(self, x, h):
         x = self.stft(x)
         x = self.encoder(x)
-        return self.decoder(x)
+        return self.decoder(x, h)
 
-def test():
-    torch.set_printoptions(sci_mode=False)
+# The example code below shows how to apply SileroVAD() class
+# to audio waveform. You can execute it like this:
+#
+#   $ python3 silero.vad
+#   Saved: jfk-00005120-00034816.raw
+#   Saved: jfk-00053760-00055808.raw
+#   Saved: jfk-00057856-00059392.raw
+#   ...
+#
+# Note that each file contains a speech segment (from <start> samples
+# to <end> samples).
 
+def apply_vad(model, waveform):
+    nsamples = len(waveform)
+    threshold = 0.5
+    window_size = 512
+    context_size = 64
+
+    context = torch.zeros(context_size)
+    h = None
+    start = None
+
+    for idx in range(0, nsamples, window_size):
+        window = waveform[idx:idx+window_size]
+        x = torch.cat((context, window), 0).unsqueeze(0)
+
+        with torch.no_grad():
+            y, h = model(x, h)
+
+        context = window[-64:]
+
+        if start is None:
+            if y.item() > threshold:
+                start = idx
+        else:
+            if y.item() < threshold:
+                yield (start, idx)
+                start = None
+
+    if start is not None:
+        yield (start, nsamples)
+
+def main():
     model = SileroVAD()
 
     model.load_state_dict(
@@ -106,17 +145,17 @@ def test():
     model.eval()
 
     with open('data/jfk.raw', 'rb') as fp:
-        audio = np.frombuffer(fp.read(), dtype=np.float32)
-        audio = torch.tensor(audio)
+        waveform = np.frombuffer(fp.read(), dtype=np.float32)
+        waveform = torch.from_numpy(waveform.copy())
 
-    x = audio[48000:48576]
-    x = torch.unsqueeze(x, 0)
+    for start, end in apply_vad(model, waveform):
+        name = f"jfk-{start:08d}-{end:08d}.raw"
+        data = waveform[start:end].detach().numpy().tobytes()
 
-    with torch.no_grad():
-        x = model(x)
+        with open(name, "wb") as fp:
+            fp.write(data)
 
-    for prob in x:
-        print(f"P = {prob.item():.4f}")
+        print(f"Saved: {name}")
 
 if __name__ == '__main__':
-    test()
+    main()
