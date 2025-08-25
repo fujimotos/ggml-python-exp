@@ -2,6 +2,7 @@ import time
 
 import librosa
 import numpy as np
+import safetensors.torch
 import torch
 import yaml
 
@@ -116,7 +117,9 @@ def train():
 
         print(f"{time.ctime()} epoch={epoch} loss={np.mean(loss_all):.3f}")
 
-    torch.save(model.state_dict(), f"{int(time.time())}.pkl")
+    name = f"{int(time.time())}.safetensors"
+    safetensors.torch.save_file(model.state_dict(), name)
+    print(f"Saved {name}")
 
 if __name__ == '__main__':
     train()
