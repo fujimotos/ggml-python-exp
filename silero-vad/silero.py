@@ -80,7 +80,8 @@ class LSTMDecoder(torch.nn.Module):
         x = x.permute(2,0,1)
         x, h = self.lstm(x, h)
         x = x.permute(1,2,0)
-        return self.se(x), h
+        x = self.se(x)
+        return x.squeeze(), h
 
 class SileroVAD(torch.nn.Module):
     def __init__(self):
