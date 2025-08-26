@@ -10,6 +10,11 @@ understand how a VAD works.
 * PyTorch implementation of SileroVAD
 * Re-implemented by hand based on the original TorshScript version.
 
+`train.py`
+
+* An example training script for silero.py.
+* Confirmed to converge under 5 minutes on Intel i7-1165G7.
+
 `torchscript_to_safetensors.py`
 
 * Extract tensor data from TorchScript file.
