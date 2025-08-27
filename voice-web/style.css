@@ -22,11 +22,32 @@ h1 {
 
 h2 {
     font-weight: 300;
+}
+
+.tools {
+  display: flex;
+}
+
+.tools label {
+  flex: auto;
+}
+
+.tools input {
+  vertical-align: bottom;
+}
+
+.sub {
+    font-weight: 300;
     text-align: center;
-    font-size: 1.0em;
     color: #777;
 }
 
 #waveform {
     padding: 2em;
+}
+
+#label {
+    width: 100%;
+    height: 300px;
+    resize: none;
 }

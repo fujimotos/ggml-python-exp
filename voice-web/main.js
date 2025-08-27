@@ -18,17 +18,21 @@ function save_to_storage(ctx)
         voice_segments.push({start: region.start, end: region.end});
     }
 
-    localStorage.setItem(ctx.filename, JSON.stringify({
+    let blob = JSON.stringify({
         voice_segments: voice_segments
-    }));
+    });
+
+    localStorage.setItem(ctx.filename, blob);
 }
 
 function load_from_storage(ctx)
 {
     let blob = localStorage.getItem(ctx.filename);
     if (!blob) {
-        return {};
+        return;
     }
+
+    ctx.region_plugin.clearRegions();
 
     let dict = JSON.parse(blob);
 
@@ -38,6 +42,12 @@ function load_from_storage(ctx)
             end: vs.end,
         });
     }
+}
+
+function update_textarea(ctx)
+{
+    let blob = localStorage.getItem(ctx.filename);
+    ctx.textarea.value = blob || "";
 }
 
 function clear_active_region(ctx)
@@ -59,6 +69,20 @@ function set_active_region(ctx, new_region)
 
 function start_app(ctx)
 {
+    ctx.textarea = document.querySelector('#label');
+
+    const upload = document.querySelector('input[type="file"]');
+
+    upload.addEventListener("input", (e) => {
+        let file = e.target.files[0];
+        ctx.wavesurfer.loadBlob(file);
+        ctx.filename = file.name;
+
+        load_from_storage(ctx);
+        console.log(upload);
+        e.target.blur();
+    });
+
     const slider = document.querySelector('input[type="range"]');
 
     slider.addEventListener("input", (e) => {
@@ -76,10 +100,12 @@ function start_app(ctx)
             } else {
                 ctx.wavesurfer.play();
             }
+            e.preventDefault();
         }
     })
 
     load_from_storage(ctx);
+    update_textarea(ctx);
 }
 
 /*
@@ -92,6 +118,7 @@ function main()
         region_plugin: null,
         active_region: null,
         filename: null,
+        textarea: null,
     };
 
     ctx.region_plugin = RegionsPlugin.create();
@@ -114,11 +141,13 @@ function main()
     ctx.region_plugin.on('region-created', (region) => {
         set_active_region(ctx, region);
         save_to_storage(ctx);
+        update_textarea(ctx);
     });
 
     ctx.region_plugin.on('region-updated', (region) => {
         set_active_region(ctx, region);
         save_to_storage(ctx);
+        update_textarea(ctx);
     });
 
     ctx.region_plugin.on('region-clicked', (region, e) => {
@@ -133,6 +162,7 @@ function main()
         }
         region.remove();
         save_to_storage(ctx);
+        update_textarea(ctx);
     });
 
     ctx.wavesurfer.on('interaction', () => {

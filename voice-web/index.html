@@ -9,15 +9,21 @@
 <body>
   <main>
     <h1>Interactive Audio Annotator</h1>
-    <h2>Upload an audio file, click the waveform to add labels.</h2>
+    <p class='sub'>Upload an audio file, click the waveform to add labels.</p>
 
     <div id="waveform"></div>
 
-    <p>
+    <div class='tools'>
+      <label class='upload'>
+        <input type="file">
+      </label>
       <label class='zoom'>
         Zoom: <input type="range" min="10" max="1000" value="50" />
       </label>
-    </p>
+    </div>
+
+    <h2>Annotation</h2>
+    <textarea id="label" disabled></textarea>
   </main>
   <script type='module' src="main.js"></script>
 </body>
