@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>voice-web | A single-page webapp to annotate human voice</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Interactive Audio Annotator</h1>
+    <h2>Upload an audio file, click the waveform to add labels.</h2>
+
+    <div id="waveform"></div>
+
+    <p>
+      <label class='zoom'>
+        Zoom: <input type="range" min="10" max="1000" value="50" />
+      </label>
+    </p>
+  </main>
+  <script type='module' src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f3f3f3;
+}
+
+main {
+    padding: 2em;
+    margin: 3em auto;
+    border: 1px solid #f3f3f3;
+    border-radius: 10px;
+    width: 80%;
+    background: #fff;
+    box-shadow: 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-weight: 300;
+    text-align: center;
+}
+
+h2 {
+    font-weight: 300;
+    text-align: center;
+    font-size: 1.0em;
+    color: #777;
+}
+
+#waveform {
+    padding: 2em;
+}
