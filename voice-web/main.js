@@ -1,5 +1,6 @@
 import WaveSurfer from '/wavesurfer.js/dist/wavesurfer.esm.js'
 import RegionsPlugin from '/wavesurfer.js/dist/plugins/regions.esm.js'
+import TimelinePlugin from '/wavesurfer.js/dist/plugins/timeline.esm.js'
 
 const COLOR_WAVE = 'rgb(100, 100, 100)';
 const COLOR_WAVE_PROGRESS = 'rgb(200, 100, 100)';
@@ -97,11 +98,12 @@ function main()
     };
 
     ctx.region_plugin = RegionsPlugin.create();
+    ctx.timeline_plugin = TimelinePlugin.create();
 
     ctx.wavesurfer = WaveSurfer.create({
         container: '#waveform',
         waveColor: COLOR_WAVE,
-        plugins: [ctx.region_plugin],
+        plugins: [ctx.region_plugin, ctx.timeline_plugin],
         barWidth: 2,
         barGap: 1,
         barRadius: 2,
