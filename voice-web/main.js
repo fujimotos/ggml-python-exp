@@ -15,7 +15,9 @@ function save_to_storage(ctx)
     let voice_segments = [];
 
     for (const region of regions) {
-        voice_segments.push({start: region.start, end: region.end});
+        if (region.end - region.start > 0) {
+            voice_segments.push({start: region.start, end: region.end});
+        }
     }
 
     let blob = JSON.stringify({
