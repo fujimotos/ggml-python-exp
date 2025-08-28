@@ -63,20 +63,20 @@ function update_textarea(ctx)
     ctx.textarea.value = blob || "";
 }
 
-function clear_active_region(ctx)
+function set_active_region(ctx, new_region)
+{
+    if (ctx.active_region !== new_region) {
+        unset_active_region(ctx);
+        ctx.active_region = new_region;
+        ctx.active_region.setOptions({ color: COLOR_REGION_ACTIVE });
+    }
+}
+
+function unset_active_region(ctx)
 {
     if (ctx.active_region) {
         ctx.active_region.setOptions({ color: COLOR_REGION_INACTIVE });
         ctx.active_region = null;
-    }
-}
-
-function set_active_region(ctx, new_region)
-{
-    if (ctx.active_region !== new_region) {
-        clear_active_region(ctx);
-        ctx.active_region = new_region;
-        ctx.active_region.setOptions({ color: COLOR_REGION_ACTIVE });
     }
 }
 
@@ -133,7 +133,7 @@ function main()
     ctx.region_plugin.on('region-double-clicked', (region, e) => {
         e.stopPropagation();
         if (region === ctx.active_region) {
-            clear_active_region(ctx);
+            unset_active_region(ctx);
         }
         region.remove();
         save_to_storage(ctx);
@@ -141,7 +141,7 @@ function main()
     });
 
     ctx.wavesurfer.on('interaction', () => {
-        clear_active_region(ctx);
+        unset_active_region(ctx);
     })
 
     ctx.wavesurfer.on('decode', () => {
