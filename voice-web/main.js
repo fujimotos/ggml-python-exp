@@ -35,25 +35,28 @@ function save_to_storage(ctx)
     });
 
     localStorage.setItem(key, blob);
+    ctx.textarea.value = blob;
 }
 
 function load_from_storage(ctx)
 {
-    ctx.region_plugin.clearRegions();
-
     let key = get_storage_key(ctx);
     let blob = localStorage.getItem(key);
-    if (!blob) {
-        return;
-    }
 
-    let dict = JSON.parse(blob);
+    if (blob) {
+        ctx.region_plugin.clearRegions();
 
-    for (const vs of dict.voice_segments) {
-        ctx.region_plugin.addRegion({
-            start: vs.start,
-            end: vs.end,
-        });
+        let dict = JSON.parse(blob);
+        for (const vs of dict.voice_segments) {
+            ctx.region_plugin.addRegion({
+                start: vs.start,
+                end: vs.end,
+            });
+        }
+        ctx.textarea.value = blob;
+    } else {
+        ctx.region_plugin.clearRegions();
+        ctx.textarea.value = "";
     }
 }
 
@@ -63,16 +66,8 @@ function open_new_audio(ctx, file)
     ctx.wavesurfer.loadBlob(file).then(() => {
         ctx.filename = file.name;
         load_from_storage(ctx);
-        update_textarea(ctx);
         ctx.loading = false;
     });
-}
-
-function update_textarea(ctx)
-{
-    let key = get_storage_key(ctx);
-    let blob = localStorage.getItem(key);
-    ctx.textarea.value = blob || "";
 }
 
 function set_active_region(ctx, new_region)
@@ -129,14 +124,12 @@ function main()
         if (!ctx.loading) {
             set_active_region(ctx, region);
             save_to_storage(ctx);
-            update_textarea(ctx);
         }
     });
 
     ctx.region_plugin.on('region-updated', (region) => {
         set_active_region(ctx, region);
         save_to_storage(ctx);
-        update_textarea(ctx);
     });
 
     ctx.region_plugin.on('region-clicked', (region, e) => {
@@ -151,7 +144,6 @@ function main()
         }
         region.remove();
         save_to_storage(ctx);
-        update_textarea(ctx);
     });
 
     ctx.wavesurfer.on('interaction', () => {
