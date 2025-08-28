@@ -10,6 +10,11 @@ const COLOR_REGION_INACTIVE = 'rgba(0, 0, 0, 0.1)';
 /*
  * Save annotation data into LocalStorage
  */
+function get_storage_key(ctx)
+{
+    return `${ctx.filename}/${ctx.select.value}`;
+}
+
 function save_to_storage(ctx)
 {
     let regions = ctx.region_plugin.getRegions();
@@ -17,22 +22,27 @@ function save_to_storage(ctx)
 
     for (const region of regions) {
         if (region.end - region.start > 0) {
-            voice_segments.push({start: region.start, end: region.end});
+            voice_segments.push({
+                start: region.start,
+                end: region.end,
+            });
         }
     }
 
+    let key = get_storage_key(ctx);
     let blob = JSON.stringify({
         voice_segments: voice_segments
     });
 
-    localStorage.setItem(ctx.filename, blob);
+    localStorage.setItem(key, blob);
 }
 
 function load_from_storage(ctx)
 {
     ctx.region_plugin.clearRegions();
 
-    let blob = localStorage.getItem(ctx.filename);
+    let key = get_storage_key(ctx);
+    let blob = localStorage.getItem(key);
     if (!blob) {
         return;
     }
@@ -60,7 +70,8 @@ function open_new_audio(ctx, file)
 
 function update_textarea(ctx)
 {
-    let blob = localStorage.getItem(ctx.filename);
+    let key = get_storage_key(ctx);
+    let blob = localStorage.getItem(key);
     ctx.textarea.value = blob || "";
 }
 
@@ -94,6 +105,7 @@ function main()
         textarea: null,
         fileinput: null,
         slider: null,
+        select: null,
         loading: false,
     };
 
@@ -170,9 +182,14 @@ function main()
         ctx.textarea = document.querySelector('#label');
         ctx.fileinput = document.querySelector('input[type="file"]');
         ctx.slider = document.querySelector('input[type="range"]');
+        ctx.select = document.querySelector('select');
 
         ctx.slider.addEventListener("input", (e) => {
             ctx.wavesurfer.zoom(Number(e.target.value))
+        });
+
+        ctx.select.addEventListener("change", (e) => {
+            load_from_storage(ctx)
         });
 
         ctx.fileinput.addEventListener("input", (e) => {
